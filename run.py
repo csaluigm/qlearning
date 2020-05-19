@@ -10,10 +10,12 @@ from utils import get_data, get_scaler, maybe_make_dir
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
-  parser.add_argument('-e', '--episode', type=int, default=200,
+  parser.add_argument('-e', '--episode', type=int, default=20,
                       help='number of episode to run')
   parser.add_argument('-b', '--batch_size', type=int, default=32,
                       help='batch size for experience replay')
@@ -30,17 +32,11 @@ if __name__ == '__main__':
   timestamp = time.strftime('%Y%m%d%H%M')
 
   data = np.around(get_data())
-  train_data = data[:, :50]
-  test_data = data[:, 50:]
+  train_data = data[:, :10]
+  test_data = data[:, 10:]
 
 
   plt.plot(train_data[0])
-
-  # t = pd.DataFrame(train_data)
-  # test = pd.DataFrame(test_data)
-
-  # t.plot()
-  # test.plot()
 
   plt.show()
 
@@ -86,9 +82,9 @@ if __name__ == '__main__':
   sell_data = np.asarray(agent.qs[2]).reshape(args.episode,(train_data.size)-1)
   action_data = np.asarray(agent.qs[3]).reshape(args.episode,(train_data.size)-1)
 
+
   def get_scatter(data):
       # import plotly.express as px
-      import plotly.graph_objects as go
       
       plots = []
 
@@ -109,11 +105,28 @@ if __name__ == '__main__':
               rownum += 1
           plots.append(go.Scatter3d(x=X, y=Z, z=Y, mode='lines+markers'))
 
-      fig = go.Figure(data=plots)
-      fig.show()
+      return plots
+
+  # fig = go.Figure(data=plots)
+  # fig.show()
+
+
+  fig = make_subplots(rows=1, cols=2,
+  specs=[[{"type": "scene"}, {"type": "xy"}]])
+
+
 
   # get_poly(hold_data)
-  get_scatter([hold_data,buy_data,sell_data,action_data])
+  scatter_plots = get_scatter([hold_data,buy_data,sell_data,action_data])
+
+  for p in scatter_plots:
+    fig.add_trace(
+      p,
+      row=1, col=1
+    )
+
+  fig.show()
+
   # portfolio.performance.net_worth.plot()
 
   plt.show()
